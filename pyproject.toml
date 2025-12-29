@@ -1,0 +1,27 @@
+[project]
+name = "pdb-processor"
+version = "1.0.0"
+description = "增量PDB数据下载和预处理系统"
+authors = [{ name = "Lvjun Guo", email = "gljx898989@163.com" }]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "biopython>=1.79",
+    "requests>=2.25.0",
+    "tqdm>=4.60.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0", "black>=22.0.0", "flake8>=4.0.0"]
+
+[project.scripts]
+pdb-processor = "pdb_processor.__main__:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pdb_processor*"]
+
