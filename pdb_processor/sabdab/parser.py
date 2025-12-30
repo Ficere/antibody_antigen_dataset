@@ -26,9 +26,11 @@ class SAbDabEntry:
     
     @property
     def antibody_chains(self) -> List[str]:
-        """获取抗体链列表（重链 + 轻链）"""
-        chains = [self.heavy_chain] if self.heavy_chain else []
-        if self.light_chain:
+        """获取抗体链列表（重链 + 轻链，去重）"""
+        chains = []
+        if self.heavy_chain and self.heavy_chain not in chains:
+            chains.append(self.heavy_chain)
+        if self.light_chain and self.light_chain not in chains:
             chains.append(self.light_chain)
         return chains
     
@@ -79,19 +81,13 @@ class SAbDabParser:
         pdb_id = row.get("pdb", "").strip()
         if not pdb_id or len(pdb_id) != 4:
             return None
-        
-        # 解析链信息
-        heavy_chain = row.get("Hchain", "").strip()
-        light_chain = row.get("Lchain", "").strip()
+
+        # 解析链信息，转换为大写（PDB 文件中链 ID 为大写）
+        heavy_chain = self._normalize_chain_id(row.get("Hchain", ""))
+        light_chain = self._normalize_chain_id(row.get("Lchain", ""))
         antigen_chain_str = row.get("antigen_chain", "")
-        antigen_chains = parse_chain_ids(antigen_chain_str)
-        
-        # 处理无效的链ID
-        if heavy_chain.upper() == "NA":
-            heavy_chain = ""
-        if light_chain.upper() == "NA":
-            light_chain = ""
-        
+        antigen_chains = [c.upper() for c in parse_chain_ids(antigen_chain_str)]
+
         # 解析分辨率
         resolution = None
         res_str = row.get("resolution", "").strip()
@@ -100,7 +96,7 @@ class SAbDabParser:
                 resolution = float(res_str)
             except ValueError:
                 pass
-        
+
         return SAbDabEntry(
             pdb_id=normalize_pdb_id(pdb_id),
             original_pdb_id=pdb_id,
@@ -111,6 +107,11 @@ class SAbDabParser:
             resolution=resolution,
             method=row.get("method", ""),
         )
+
+    def _normalize_chain_id(self, chain_id: str) -> str:
+        """标准化链 ID：去除空白、转大写、处理 NA"""
+        chain_id = chain_id.strip().upper()
+        return "" if chain_id == "NA" else chain_id
     
     def get_valid_entries(self) -> List[SAbDabEntry]:
         """获取所有有效的条目"""

@@ -3,11 +3,8 @@
 import argparse
 import sys
 
-from pdb_processor.cli.commands import (
-    cmd_info,
-    cmd_process,
-    cmd_sabdab,
-)
+from pdb_processor.cli.commands import cmd_info, cmd_process, cmd_sabdab
+from pdb_processor.cli.retry import cmd_retry
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -99,7 +96,23 @@ def create_parser() -> argparse.ArgumentParser:
         default="downloads",
         help="输出目录",
     )
-    
+
+    # retry 命令
+    retry_parser = subparsers.add_parser(
+        "retry",
+        help="重新处理失败的条目",
+    )
+    retry_parser.add_argument(
+        "--output", "-o",
+        default="downloads",
+        help="输出目录 (默认: downloads)",
+    )
+    retry_parser.add_argument(
+        "--limit", "-l",
+        type=int,
+        help="限制重试数量",
+    )
+
     return parser
 
 
@@ -132,6 +145,8 @@ def main():
             )
         elif args.command == "info":
             cmd_info(args.pdb_id, args.output)
+        elif args.command == "retry":
+            cmd_retry(args.output, args.limit)
     except KeyboardInterrupt:
         print("\n操作已取消")
         sys.exit(1)

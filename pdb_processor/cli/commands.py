@@ -99,19 +99,19 @@ def cmd_info(pdb_id: str, output_dir: str):
     """查看 PDB 链信息"""
     config = Config(base_dir=output_dir)
     config.ensure_directories()
-    
+
     downloader = PDBDownloader(config)
     splitter = StructureSplitter(config)
-    
+
     # 确保 PDB 已下载
     download_result = downloader.download(pdb_id)
     if not download_result.success:
         print(f"下载失败: {download_result.error}")
         return
-    
+
     # 获取链信息
     chain_info = splitter.get_chain_info(download_result.path)
-    
+
     print(f"\nPDB {pdb_id.upper()} 链信息:")
     print("-" * 40)
     for chain_id, residue_count in sorted(chain_info.items()):
